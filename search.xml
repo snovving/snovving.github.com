@@ -20,7 +20,7 @@
       
         <tags>
             
-            <tag> ftp 模式 </tag>
+            <tag> ftp模式 </tag>
             
             <tag> php-fpm </tag>
             
@@ -42,6 +42,8 @@
           
           <category> 漏洞复现 </category>
           
+          <category> PHP代码审计 </category>
+          
       </categories>
       
       
@@ -51,11 +53,9 @@
             
             <tag> 远程代码执行漏洞 </tag>
             
-            <tag> PHP代码审计 </tag>
-            
             <tag> Ignition </tag>
             
-            <tag> phar 反序列化 </tag>
+            <tag> phar反序列化 </tag>
             
             <tag> RCE </tag>
             
