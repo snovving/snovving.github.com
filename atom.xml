@@ -6,7 +6,7 @@
   <link href="https://snovving.top/atom.xml" rel="self"/>
   
   <link href="https://snovving.top/"/>
-  <updated>2021-11-03T07:47:16.454Z</updated>
+  <updated>2021-11-18T15:36:40.461Z</updated>
   <id>https://snovving.top/</id>
   
   <author>
@@ -15,6 +15,25 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>橙光 V2.31.284.0923 内购任意订单修改</title>
+    <link href="https://snovving.top/posts/63c2921e/"/>
+    <id>https://snovving.top/posts/63c2921e/</id>
+    <published>2021-11-18T14:30:00.000Z</published>
+    <updated>2021-11-18T15:36:40.461Z</updated>
+    
+    
+    <summary type="html">重写导致的任意订单修改，可修改无限虚拟货币。</summary>
+    
+    
+    
+    <category term="漏洞挖掘" scheme="https://snovving.top/categories/%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98/"/>
+    
+    
+    <category term="逻辑漏洞" scheme="https://snovving.top/tags/%E9%80%BB%E8%BE%91%E6%BC%8F%E6%B4%9E/"/>
+    
+  </entry>
   
   <entry>
     <title>从 hxp 2020 一道题来看利用 ftp 与 php-fpm 对话 RCE</title>
