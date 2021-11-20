@@ -6,7 +6,7 @@
   <link href="https://snovving.top/atom.xml" rel="self"/>
   
   <link href="https://snovving.top/"/>
-  <updated>2021-11-19T11:37:05.562Z</updated>
+  <updated>2021-11-20T18:59:02.075Z</updated>
   <id>https://snovving.top/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>CVE-2021-37580 Apache ShenYu JWT 认证缺陷漏洞分析</title>
+    <link href="https://snovving.top/posts/bb793f41/"/>
+    <id>https://snovving.top/posts/bb793f41/</id>
+    <published>2021-11-20T12:40:22.000Z</published>
+    <updated>2021-11-20T18:59:02.075Z</updated>
+    
+    
+    <summary type="html">代审星球 threedr3am 师傅发布了一篇文章阐述了这个漏洞原理，复现学习。</summary>
+    
+    
+    
+    <category term="漏洞复现" scheme="https://snovving.top/categories/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/"/>
+    
+    <category term="JAVA代码审计" scheme="https://snovving.top/categories/JAVA%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
+    
+    
+    <category term="JWT" scheme="https://snovving.top/tags/JWT/"/>
+    
+    <category term="Apache ShenYu" scheme="https://snovving.top/tags/Apache-ShenYu/"/>
+    
+  </entry>
   
   <entry>
     <title>橙光 V2.31.284.0923 内购任意订单修改漏洞</title>
@@ -57,11 +80,11 @@
   </entry>
   
   <entry>
-    <title>CVE-2021-3129 Laravel Debug mode 远程代码执行漏洞复现</title>
+    <title>CVE-2021-3129 Laravel Debug mode 远程代码执行漏洞分析</title>
     <link href="https://snovving.top/posts/608ab632/"/>
     <id>https://snovving.top/posts/608ab632/</id>
     <published>2021-10-30T12:00:00.000Z</published>
-    <updated>2021-11-06T06:30:53.913Z</updated>
+    <updated>2021-11-20T14:33:54.030Z</updated>
     
     
     <summary type="html">安全客投稿的第一篇文章。</summary>

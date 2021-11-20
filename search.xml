@@ -4,6 +4,35 @@
   
     
     <entry>
+      <title>CVE-2021-37580 Apache ShenYu JWT 认证缺陷漏洞分析</title>
+      <link href="/posts/bb793f41/"/>
+      <url>/posts/bb793f41/</url>
+      
+        <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文主要参照 threedr3am 师傅的文章进行复现，并自行添加了一些内容进行拓展。</p><p>原文地址：<a href="https://articles.zsxq.com/id_crk7w2w1wjwa.html">Apache ShenYu Admin bypass JWT authentication CVE-2021-37580 (zsxq.com)</a></p><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Apache ShenYu 是应用于所有微服务场景的，可扩展、高性能、响应式的 API 网关。</p><p><a href="https://shenyu.apache.org/zh/">High-performance, multi-protocol, extensible, responsive API Gateway | Apache ShenYu (Incubating)</a></p><h3 id="漏洞成因"><a href="#漏洞成因" class="headerlink" title="漏洞成因"></a>漏洞成因</h3><ol><li>有默认泄露的签名密钥。</li><li>jwt 没有对密码的校验，只用了用户名与 key 。</li></ol><h3 id="影响版本"><a href="#影响版本" class="headerlink" title="影响版本"></a>影响版本</h3><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211120213220155.png" alt="image-20211120213220155" style="zoom:80%;" /><h3 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h3><p><a href="https://github.com/fofapro/vulfocus">fofapro/vulfocus: 🚀Vulfocus 是一个漏洞集成平台，将漏洞环境 docker 镜像，放入即可使用，开箱即用。 (github.com)</a></p><p>偶然发现了 Vulfocus 这个漏洞集成平台，可以<a href="http://vulfocus.fofa.so/">在线网站</a>上注册完成新手的两个题目启动 CVE-2021-37580 这个漏洞镜像环境。</p><p>OR</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull vulfocus/apache_shenyu-ce_2021_37580:latest</span><br></pre></td></tr></table></figure><h2 id="复现"><a href="#复现" class="headerlink" title="复现"></a>复现</h2><h3 id="代码审计"><a href="#代码审计" class="headerlink" title="代码审计"></a>代码审计</h3><p>grep 翻了半天。</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git log -p -1 f78adb2</span><br></pre></td></tr></table></figure><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211120220438845.png" alt="image-20211120220438845"  /><p>可以看到 2.4.0 版本有个默认的 jwt 签名密钥，这是漏洞成因之一，2.4.1 将其删除并添加了 token 过期时间，在 shenyu-admin 中。</p><p>以 <a href="https://archive.apache.org/dist/incubator/shenyu/2.4.0/apache-shenyu-incubating-2.4.0-src.zip">apache-shenyu-incubating-2.4.0</a> 源代码审计。</p><p>看了一下是 shiro 认证框架，有两种认证方式，一种是 username &amp; password ，另一种就是 jwt 认证，先来看 shiro 配置。</p><p>org/apache/shenyu/admin/shiro/config/ShiroConfiguration.java</p><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211120232733285.png" alt="image-20211120232733285" style="zoom:80%;" /><p>这个方法将 ShiroFilterFactoryBean 交给 Spring 托管，定义了一个 filterMap 将 StatelessAuthFilter 放进 Map 中，key 是 statelessAuth ，Filter 也放到了里面。</p><p>WhiteList 中的所有路径都不经过滤操作（ anon ），其他都要经 StatelessAuthFilter 过滤器过滤。</p><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211120234757816.png" alt="image-20211120234757816" style="zoom:80%;" /><p>还有个方法 securityManager 自定义了 shiroRealm 作为 Realm 。</p><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211121003544864.png" alt="image-20211121003544864" style="zoom:80%;" /><p>org/apache/shenyu/admin/shiro/config/ShiroRealm.java</p><p>这里面有两个 doGetAuthorizationInfo 方法：</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> AuthorizationInfo <span class="title">doGetAuthorizationInfo</span><span class="params">(<span class="keyword">final</span> PrincipalCollection principalCollection)</span></span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> AuthenticationInfo <span class="title">doGetAuthenticationInfo</span><span class="params">(<span class="keyword">final</span> AuthenticationToken authenticationToken)</span> </span></span><br></pre></td></tr></table></figure><p>其中：</p><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211121004717242.png" alt="image-20211121004717242" style="zoom:80%;" /><p>一般网关都会用 jwtUtils 校验 jwt token ，但这里完全没有，这是漏洞成因之二。</p><p>org/apache/shenyu/admin/shiro/bean/StatelessAuthFilter.java</p><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211120235549509.png" alt="image-20211120235549509" style="zoom:80%;" /><p>如图所示，就因为没有校验，登录通过 subject 对象主动调用权限校验触发 doGetAuthorizationInfo 方法时，可以直接用管理员用户名和默认密钥生成管理员的 jwt ，decode 正常任意 key 都能绕过权限验证。</p><p>流程大概是这样的：</p><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211121025627642.png" alt="image-20211121025627642" style="zoom:50%;" /><p>来看 2.4.1 是怎么修复的：</p><p><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211121025053320.png" alt="image-20211121025053320"></p><h3 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h3><p><a href="https://jwt.io/">JSON Web Tokens - jwt.io</a></p><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211121022821840.png" alt="image-20211121022821840" style="zoom:80%;" /><p>访问 /dashboardUser 添加 <code>X-Access-Token</code> ：</p><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211121022259328.png" alt="image-20211121022259328" style="zoom:80%;" /><p><img src="http://blog-img-1308029004.cossh.myqcloud.com/image-20211121023012019.png" alt="image-20211121023012019"></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 漏洞复现 </category>
+          
+          <category> JAVA代码审计 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> JWT </tag>
+            
+            <tag> Apache ShenYu </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>橙光 V2.31.284.0923 内购任意订单修改漏洞</title>
       <link href="/posts/63c2921e/"/>
       <url>/posts/63c2921e/</url>
@@ -56,7 +85,7 @@
     
     
     <entry>
-      <title>CVE-2021-3129 Laravel Debug mode 远程代码执行漏洞复现</title>
+      <title>CVE-2021-3129 Laravel Debug mode 远程代码执行漏洞分析</title>
       <link href="/posts/608ab632/"/>
       <url>/posts/608ab632/</url>
       
